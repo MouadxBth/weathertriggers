@@ -10,6 +10,7 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import me.hanane.security.AuthenticatedUser;
+import me.hanane.views.dashboard.DashboardView;
 
 @AnonymousAllowed
 @PageTitle("Login")
@@ -38,7 +39,7 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         if (authenticatedUser.get().isPresent()) {
             // Already logged in
             setOpened(false);
-            event.forwardTo("");
+            event.forwardTo(DashboardView.class);
         }
 
         setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));

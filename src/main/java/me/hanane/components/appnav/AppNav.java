@@ -84,7 +84,7 @@ public class AppNav extends Component implements HasSize, HasStyle {
      * @return the label or null if no label has been set
      */
     public String getLabel() {
-        return getExistingLabelElement().map(e -> e.getText()).orElse(null);
+        return getExistingLabelElement().map(Element::getText).orElse(null);
     }
 
     /**

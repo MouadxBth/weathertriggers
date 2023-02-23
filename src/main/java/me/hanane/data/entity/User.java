@@ -13,19 +13,19 @@ import javax.persistence.Table;
 import me.hanane.data.Role;
 
 @Entity
-@Table(name = "application_user")
+@Table(name = "users")
 public class User extends AbstractEntity {
 
     private String username;
     private String name;
+    private String city;
+    private String state;
+    private String country;
     @JsonIgnore
     private String hashedPassword;
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles;
-    @Lob
-    @Column(length = 1000000)
-    private byte[] profilePicture;
 
     public String getUsername() {
         return username;
@@ -51,11 +51,28 @@ public class User extends AbstractEntity {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
-    public byte[] getProfilePicture() {
-        return profilePicture;
-    }
-    public void setProfilePicture(byte[] profilePicture) {
-        this.profilePicture = profilePicture;
+
+    public String getCity() {
+        return city;
     }
 
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
 }

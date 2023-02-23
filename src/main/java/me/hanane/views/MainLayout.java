@@ -4,31 +4,22 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.contextmenu.MenuItem;
-import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Footer;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Header;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-import java.io.ByteArrayInputStream;
-import java.util.Optional;
 import me.hanane.components.appnav.AppNav;
 import me.hanane.components.appnav.AppNavItem;
 import me.hanane.data.entity.User;
 import me.hanane.security.AuthenticatedUser;
 import me.hanane.views.about.AboutView;
 import me.hanane.views.dashboard.DashboardView;
-import me.hanane.views.login.LoginView;
-import me.hanane.views.register.RegisterView;
 import me.hanane.views.triggers.TriggersView;
-import me.hanane.views.weather.WeatherView;
+
+import java.util.Optional;
 
 /**
  * The main view is a top-level placeholder for other views.
@@ -36,11 +27,11 @@ import me.hanane.views.weather.WeatherView;
 public class MainLayout extends AppLayout {
 
     private H2 viewTitle;
+    private final AuthenticatedUser authenticatedUser;
+    private final AccessAnnotationChecker accessChecker;
 
-    private AuthenticatedUser authenticatedUser;
-    private AccessAnnotationChecker accessChecker;
-
-    public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
+    public MainLayout(AuthenticatedUser authenticatedUser,
+                      AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
         this.accessChecker = accessChecker;
 
@@ -70,33 +61,16 @@ public class MainLayout extends AppLayout {
     }
 
     private AppNav createNavigation() {
-        // AppNav is not yet an official component.
-        // For documentation, visit https://github.com/vaadin/vcf-nav#readme
         AppNav nav = new AppNav();
 
         if (accessChecker.hasAccess(DashboardView.class)) {
             nav.addItem(new AppNavItem("Dashboard", DashboardView.class, "la la-globe"));
-
-        }
-        if (accessChecker.hasAccess(WeatherView.class)) {
-            nav.addItem(new AppNavItem("Weather", WeatherView.class, "la la-th-list"));
-
         }
         if (accessChecker.hasAccess(TriggersView.class)) {
             nav.addItem(new AppNavItem("Triggers", TriggersView.class, "la la-list"));
-
-        }
-        if (accessChecker.hasAccess(LoginView.class)) {
-            nav.addItem(new AppNavItem("Login", LoginView.class, "la la-file"));
-
-        }
-        if (accessChecker.hasAccess(RegisterView.class)) {
-            nav.addItem(new AppNavItem("Register", RegisterView.class, "la la-user"));
-
         }
         if (accessChecker.hasAccess(AboutView.class)) {
             nav.addItem(new AppNavItem("About", AboutView.class, "la la-lightbulb"));
-
         }
 
         return nav;
@@ -110,9 +84,6 @@ public class MainLayout extends AppLayout {
             User user = maybeUser.get();
 
             Avatar avatar = new Avatar(user.getName());
-            StreamResource resource = new StreamResource("profile-pic",
-                    () -> new ByteArrayInputStream(user.getProfilePicture()));
-            avatar.setImageResource(resource);
             avatar.setThemeName("xsmall");
             avatar.getElement().setAttribute("tabindex", "-1");
 
