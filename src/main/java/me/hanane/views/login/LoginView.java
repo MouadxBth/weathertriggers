@@ -1,7 +1,11 @@
 package me.hanane.views.login;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.login.LoginI18n;
 import com.vaadin.flow.component.login.LoginOverlay;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -9,39 +13,46 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 import me.hanane.security.AuthenticatedUser;
+import me.hanane.views.AuthLayout;
 import me.hanane.views.dashboard.DashboardView;
+import me.hanane.views.register.RegisterView;
 
 @AnonymousAllowed
 @PageTitle("Login")
 @Route(value = "login")
-public class LoginView extends LoginOverlay implements BeforeEnterObserver {
+public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
     private final AuthenticatedUser authenticatedUser;
+    private final LoginForm loginForm = new LoginForm();
 
     public LoginView(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
-        setAction(RouteUtil.getRoutePath(VaadinService.getCurrent().getContext(), getClass()));
+        loginForm.setAction(RouteUtil.getRoutePath(VaadinService.getCurrent().getContext(), getClass()));
+        addClassNames(LumoUtility.Display.FLEX,
+                LumoUtility.AlignItems.CENTER,
+                LumoUtility.JustifyContent.CENTER);
 
-        LoginI18n i18n = LoginI18n.createDefault();
-        i18n.setHeader(new LoginI18n.Header());
-        i18n.getHeader().setTitle("WeatherTriggers");
-        i18n.getHeader().setDescription("Login using user/user or admin/admin");
-        i18n.setAdditionalInformation(null);
-        setI18n(i18n);
+        final Button button = new Button("Register");
+        button.addClickListener(listener -> {
+            button.getUI().ifPresent(ui -> ui.navigate(RegisterView.class));
+        });
 
-        setForgotPasswordButtonVisible(false);
-        setOpened(true);
+        add(loginForm, button);
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         if (authenticatedUser.get().isPresent()) {
             // Already logged in
-            setOpened(false);
+//            loginForm.setOpened(false);
             event.forwardTo(DashboardView.class);
         }
 
-        setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));
+        loginForm.setError(event.getLocation()
+                .getQueryParameters()
+                .getParameters()
+                .containsKey("error"));
     }
 }

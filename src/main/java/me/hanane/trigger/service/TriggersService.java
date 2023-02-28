@@ -18,10 +18,6 @@ public class TriggersService {
         this.repository = repository;
     }
 
-    public TriggersRepository getRepository() {
-        return repository;
-    }
-
     public List<Trigger> fetch() {
         return repository.findAll();
     }
@@ -30,12 +26,20 @@ public class TriggersService {
         return repository.findById(id);
     }
 
+    public Trigger save(Trigger trigger) {
+        return repository.save(trigger);
+    }
+
     public Trigger update(Trigger entity) {
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void delete(Trigger trigger) {
+        repository.delete(trigger);
     }
 
     public Page<Trigger> list(Pageable pageable) {

@@ -48,18 +48,14 @@ public class DashboardView extends Main implements HasComponents, HasStyle, Afte
 
     private final TriggersService triggersService;
 
-    private final ScheduledAnnotationBeanPostProcessor postProcessor;
-
-    private int dataFetchingRetries = 0;
-
-    public DashboardView(GeolocationService geolocationService, WeatherService weatherService,
-                         AuthenticatedUser authenticatedUser, TriggersService triggersService,
-                         ScheduledAnnotationBeanPostProcessor postProcessor) {
+    public DashboardView(GeolocationService geolocationService,
+                         WeatherService weatherService,
+                         AuthenticatedUser authenticatedUser,
+                         TriggersService triggersService) {
         this.geolocationService = geolocationService;
         this.weatherService = weatherService;
         this.authenticatedUser = authenticatedUser;
         this.triggersService = triggersService;
-        this.postProcessor = postProcessor;
         constructUI();
     }
 
@@ -84,75 +80,75 @@ public class DashboardView extends Main implements HasComponents, HasStyle, Afte
 
         add(weatherComponents);
     }
-//
-//    @Scheduled(fixedRate = 1 * 10_000, initialDelay = 2 * 10_000)
-//    public void refresh() {
-//        authenticatedUser.get()
-//                .ifPresentOrElse($ -> System.out.println("USER PRESENT"),
-//                        () -> System.out.println("USER NOT PRESENT"));
-//
-//        authenticatedUser.get()
-//                .flatMap(user -> geolocationService.get(user.getCity()))
-//                .flatMap(location -> weatherService.weather(location.latitude() + "", location.longitude() + ""))
-//                .ifPresentOrElse(weather -> triggersService.fetch().forEach(trigger -> {
-//                    if (weather.testTrigger(trigger)) {
-//                        if (trigger.isRunOnce() && trigger.isExecuted())
-//                            return;
-//                        final Notification notification = createNotification("");
-//                        notification.setPosition(Notification.Position.MIDDLE);
-//                        notification.addThemeVariants(NotificationVariant.LUMO_CONTRAST);
-//                        notification.setDuration(5 * 5000);
-//                        notification.setText(trigger.getMessage());
-//                        notification.open();
-//                    }
-//                }), () -> {
-//                    if (dataFetchingRetries >= 3) {
-//                        System.out.println("Could not fetch data after " + dataFetchingRetries + " retries!");
-//                        postProcessor.postProcessBeforeDestruction(this, "mainLayout");
-//                    } else {
-//                        System.out.println("Could not fetch data! retrying...");
-//                        dataFetchingRetries++;
-//                    }
-//                });
-//    }
 
+    @Override
+    public void afterNavigation(AfterNavigationEvent afterNavigationEvent) {
+        if (weatherComponents.getChildren().findAny().isEmpty()) {
+            authenticatedUser.get().ifPresent(user -> {
+                System.out.println("USER FOUND");
+                if (user.getCity() == null || user.getCity().isBlank()) {
+                    System.out.println("CITY NULL");
+                    final Notification notification = createNotification("Enter Country name for weather information!");
+                    notification.setPosition(Notification.Position.MIDDLE);
+                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    notification.setDuration(5 * 1000);
+                    notification.open();
+                    return;
+                }
+                weatherService.setWeatherComponents(getWeatherComponents(user.getCity(),
+                        user.getState(),
+                        user.getCountry()));
+                weatherComponents.add(weatherService.getWeatherComponents());
+            });
+        }
+
+    }
 
     private List<Component> getWeatherComponents(String city, String state, String country) {
         final List<Component> components = new ArrayList<>();
 
         geolocationService.get(city, state, country)
-                .flatMap(location -> {
-                    components.add(getLocationInfoComponent(location));
-                    return weatherService.weather(location.longitude() + "", location.latitude() + "");
+                .thenCompose(geolocation -> {
+                    components.add(getLocationInfoComponent(geolocation));
+                    return weatherService.weather(geolocation);
                 })
-                .ifPresentOrElse(weatherInfo -> {
-                            components.addAll(Arrays.asList(
-                                    getMainInfoComponent(weatherInfo.mainInfo()),
-                                    getTemperatureComponent(weatherInfo.mainInfo()),
-                                    getWeatherInfoComponent(weatherInfo.weatherInfo()),
-                                    getWindInfoComponent(weatherInfo.windInfo()),
-                                    getTriggersCount()
-                            ));
-                            triggersService.fetch().forEach(trigger -> {
-                                System.out.println(trigger);
-                                if (weatherInfo.testTrigger(trigger)) {
-                                    if (trigger.isRunOnce() && trigger.isExecuted())
-                                        return;
-                                    final Notification notification = createNotification(trigger.getMessage());
-                                    notification.setPosition(Notification.Position.MIDDLE);
-                                    notification.addThemeVariants(NotificationVariant.LUMO_PRIMARY);
-                                    notification.setDuration(5 * 5000);
-                                    notification.open();
-                                }
-                            });
-                        },
-                        () -> {
-                            final Notification notification = createNotification("Could not find city!");
-                            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                            notification.setDuration(3 * 1000);
+                .whenComplete((weatherInfo, error) -> {
+                    System.out.println("WEATHER FOUND");
+
+                    if (error != null) {
+                        error.printStackTrace();
+                        final Notification notification = createNotification("Could not find city!");
+                        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                        notification.setDuration(3 * 1000);
+                        notification.open();
+                        return;
+                    }
+                    components.addAll(Arrays.asList(
+                            getMainInfoComponent(weatherInfo.mainInfo()),
+                            getTemperatureComponent(weatherInfo.mainInfo()),
+                            getWeatherInfoComponent(weatherInfo.weatherInfo()),
+                            getWindInfoComponent(weatherInfo.windInfo()),
+                            getTriggersCount()
+                    ));
+                    getUI().ifPresent(ui -> {
+                        ui.access(() -> {
+                            weatherComponents.add(components);
+                        });
+                    });
+                    triggersService.fetch().forEach(trigger -> {
+                        System.out.println(trigger);
+                        if (weatherInfo.testTrigger(trigger)) {
+                            if (trigger.isRunOnce() && trigger.isExecuted())
+                                return;
+                            final Notification notification = createNotification(trigger.getMessage());
+                            notification.setPosition(Notification.Position.MIDDLE);
+                            notification.addThemeVariants(NotificationVariant.LUMO_PRIMARY);
+                            notification.setDuration(5 * 5000);
                             notification.open();
                         }
-                );
+                    });
+                });
+
         return components;
     }
 
@@ -170,7 +166,6 @@ public class DashboardView extends Main implements HasComponents, HasStyle, Afte
 
         if (location == null) {
             card.setDesc("Could not load location info!");
-            System.out.println("LOCATION NULL");
         } else {
             card.getTextElements().addAll(Arrays.asList(
                     createTextElement("City:", (location.city() == null ? "Not Found" : location.city())),
@@ -247,27 +242,6 @@ public class DashboardView extends Main implements HasComponents, HasStyle, Afte
             ));
         }
         return card.build();
-    }
-
-    @Override
-    public void afterNavigation(AfterNavigationEvent afterNavigationEvent) {
-        if (weatherComponents.getChildren().findAny().isEmpty()) {
-            authenticatedUser.get().ifPresent(user -> {
-                if (user.getCity() == null || user.getCity().isBlank()) {
-                    final Notification notification = createNotification("Enter Country name for weather information!");
-                    notification.setPosition(Notification.Position.MIDDLE);
-                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                    notification.setDuration(5 * 1000);
-                    notification.open();
-                    return;
-                }
-                weatherService.setWeatherComponents(getWeatherComponents(user.getCity(),
-                        user.getState(),
-                        user.getCountry()));
-                weatherComponents.add(weatherService.getWeatherComponents());
-            });
-        }
-
     }
 
     /*

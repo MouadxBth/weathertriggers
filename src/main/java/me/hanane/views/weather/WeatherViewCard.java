@@ -11,7 +11,7 @@ import java.util.List;
 
 public class WeatherViewCard extends ListItem {
 
-    private List<TextField> textElements = new ArrayList<>();
+    private final List<TextField> textElements = new ArrayList<>();
     private String desc = "";
 
     public WeatherViewCard(String title) {
@@ -22,45 +22,11 @@ public class WeatherViewCard extends ListItem {
                 Padding.MEDIUM,
                 BorderRadius.LARGE);
 
-//        Div div = new Div();
-//        div.addClassNames(Background.CONTRAST,
-//                Display.FLEX,
-//                AlignItems.CENTER,
-//                JustifyContent.CENTER,
-//                Margin.Bottom.MEDIUM,
-//                Overflow.HIDDEN,
-//                BorderRadius.MEDIUM,
-//                Width.FULL);
-//
-//        div.setHeight("160px");
-
-//        Image image = new Image();
-//        image.setWidth("100%");
-//        image.setSrc(url);
-//        image.setAlt(text);
-
-//        div.add(image);
-
         Span header = new Span();
         header.addClassNames(FontSize.XLARGE, FontWeight.SEMIBOLD);
         header.setText(title);
 
-//        Span subtitle = new Span();
-//        subtitle.addClassNames(FontSize.SMALL, TextColor.SECONDARY);
-//        subtitle.setText("Card subtitle");
-
-//        VerticalLayout textElementsLayout = new VerticalLayout();
-//        textElementsLayout.addClassName(Margin.Vertical.MEDIUM);
-
         add(header);
-
-//
-//        Span badge = new Span();
-//        badge.getElement().setAttribute("theme", "badge");
-//        badge.setText("Label");
-//        final TextField textField = new TextField();
-//        textField.setReadOnly(true);
-//        textField.setValue("THIS IS A TEST");
 
     }
 
@@ -81,8 +47,4 @@ public class WeatherViewCard extends ListItem {
         return this;
     }
 
-    public WeatherViewCard setTextElements(List<TextField> textElements) {
-        this.textElements = textElements;
-        return this;
-    }
 }

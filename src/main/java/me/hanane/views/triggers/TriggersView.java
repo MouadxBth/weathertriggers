@@ -14,6 +14,7 @@ import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import me.hanane.security.AuthenticatedUser;
 import me.hanane.trigger.Trigger;
 import me.hanane.trigger.service.TriggersService;
 import me.hanane.views.MainLayout;
@@ -31,12 +32,13 @@ public class TriggersView extends Div implements AfterNavigationObserver {
 
     private final Grid<Trigger> grid = new Grid<>();
     private final TriggersService triggersService;
-
+    private final AuthenticatedUser authenticatedUser;
     private TriggerForm triggerForm;
     private Button submit;
 
-    public TriggersView(TriggersService triggersService) {
+    public TriggersView(TriggersService triggersService, AuthenticatedUser authenticatedUser) {
         this.triggersService = triggersService;
+        this.authenticatedUser = authenticatedUser;
         addClassName("triggers-view");
         setSizeFull();
 
@@ -76,9 +78,12 @@ public class TriggersView extends Div implements AfterNavigationObserver {
                 error.open();
                 return;
             }
-
+            authenticatedUser.get()
+                    .ifPresentOrElse(user -> System.out.println("USER ON " + user),
+                    () -> System.out.println("USER NOT FOUND"));
+            authenticatedUser.get().ifPresent(result::setUser);
             result.setDate(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss").format(LocalDateTime.now()));
-            triggersService.getRepository().save(result);
+            triggersService.save(result);
             grid.setItems(triggersService.fetch());
             triggerForm.clear();
         });
@@ -87,7 +92,7 @@ public class TriggersView extends Div implements AfterNavigationObserver {
     private Grid<Trigger> createGrid() {
         grid.setHeight("100%");
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_NO_ROW_BORDERS);
-        grid.addComponentColumn(trigger -> TriggerView.build(triggersService.getRepository(), trigger));
+        grid.addComponentColumn(trigger -> TriggerView.build(triggersService, trigger));
         return grid;
     }
 

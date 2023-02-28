@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 public class AuthenticatedUser {
 
     private final UserRepository userRepository;
-
     private final WeatherService weatherService;
     private final AuthenticationContext authenticationContext;
 
@@ -28,7 +27,7 @@ public class AuthenticatedUser {
 
     public Optional<User> get() {
         return authenticationContext.getAuthenticatedUser(UserDetails.class)
-                .map(userDetails -> userRepository.findByUsername(userDetails.getUsername()));
+                .flatMap(userDetails -> userRepository.findByUsername(userDetails.getUsername()));
     }
 
     public void logout() {

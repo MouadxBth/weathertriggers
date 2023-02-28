@@ -1,5 +1,6 @@
 package me.hanane.data.service;
 
+import java.util.List;
 import java.util.Optional;
 import me.hanane.data.entity.User;
 import org.springframework.data.domain.Page;
@@ -16,12 +17,20 @@ public class UserService {
         this.repository = repository;
     }
 
-    public UserRepository getRepository() {
-        return repository;
+    public List<User> findAll() {
+        return repository.findAll();
+    }
+
+    public Optional<User> find(String username) {
+        return repository.findByUsername(username);
     }
 
     public Optional<User> get(Long id) {
         return repository.findById(id);
+    }
+
+    public User save(User user) {
+        return repository.save(user);
     }
 
     public User update(User entity) {

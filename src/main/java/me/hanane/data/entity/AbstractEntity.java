@@ -1,8 +1,17 @@
 package me.hanane.data.entity;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 import javax.persistence.*;
 
 @MappedSuperclass
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 public abstract class AbstractEntity {
 
     @Id
@@ -12,35 +21,4 @@ public abstract class AbstractEntity {
     @Version
     private int version;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    @Override
-    public int hashCode() {
-        if (getId() != null) {
-            return getId().hashCode();
-        }
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof AbstractEntity other)) {
-            return false; // null or other class
-        }
-
-        if (getId() != null) {
-            return getId().equals(other.getId());
-        }
-        return super.equals(other);
-    }
 }

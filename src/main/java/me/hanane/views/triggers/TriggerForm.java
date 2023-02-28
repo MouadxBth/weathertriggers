@@ -28,7 +28,7 @@ public class TriggerForm extends FormLayout {
 
     private final Checkbox runOnce = createCheckBox();
 
-    private final Binder<Trigger> binder = new BeanValidationBinder<>(Trigger.class);
+    private final Binder<Trigger> binder = new Binder<>(Trigger.class);
 
     private final NumberField temperature = createNumberField(),
             temp_feels_like = createNumberField(),
@@ -71,7 +71,32 @@ public class TriggerForm extends FormLayout {
     }
 
     private void setupBinder() {
-        binder.bindInstanceFields(this);
+        binder.forField(name).bind(Trigger::getName, Trigger::setName);
+        binder.forField(description).bind(Trigger::getDescription, Trigger::setDescription);
+        binder.forField(temperature).bind(Trigger::getTemperature, Trigger::setTemperature);
+        binder.forField(maximumTemperature).bind(Trigger::getMaximumTemperature, Trigger::setMaximumTemperature);
+        binder.forField(minimumTemperature).bind(Trigger::getMinimumTemperature, Trigger::setMinimumTemperature);
+        binder.forField(temp_feels_like).bind(Trigger::getTemp_feels_like, Trigger::setTemp_feels_like);
+        binder.forField(windSpeed).bind(Trigger::getWindSpeed, Trigger::setWindSpeed);
+        binder.forField(windGust).bind(Trigger::getWindGust, Trigger::setWindGust);
+        binder.forField(rainLastHour).bind(Trigger::getRainLastHour, Trigger::setRainLastHour);
+        binder.forField(runOnce).bind(Trigger::isRunOnce, Trigger::setRunOnce);
+        binder.forField(message).bind(Trigger::getMessage, Trigger::setMessage);
+
+        binder.forField(pressure).bind(trigger -> trigger.getPressure() == null ? null : (double) trigger.getPressure(),
+                (trigger, value) -> trigger.setPressure(value == null ? null : value.intValue()));
+
+        binder.forField(humidity).bind(trigger -> trigger.getHumidity() == null ? null : (double) trigger.getHumidity(),
+                (trigger, value) -> trigger.setHumidity(value == null ? null : value.intValue()));
+
+        binder.forField(windDegree).bind(trigger -> trigger.getWindDegree() == null ? null : (double) trigger.getWindDegree(),
+                (trigger, value) -> trigger.setWindDegree(value == null ? null : value.intValue()));
+
+        binder.forField(cloudiness).bind(trigger -> trigger.getCloudiness() == null ? null : (double) trigger.getCloudiness(),
+                (trigger, value) -> trigger.setCloudiness(value == null ? null : value.intValue()));
+
+        binder.forField(visibility).bind(trigger -> trigger.getVisibility() == null ? null : (double) trigger.getVisibility(),
+                (trigger, value) -> trigger.setVisibility(value == null ? null : value.intValue()));
     }
 
     public Binder<Trigger> getBinder() {
@@ -269,7 +294,7 @@ public class TriggerForm extends FormLayout {
             trigger.setVisibility(visibility.getValue().intValue());
         }
         if (windGust.getValue() != null) {
-            trigger.setWindGust(windGust.getValue().intValue());
+            trigger.setWindGust(windGust.getValue());
         }
         if (rainLastHour.getValue() != null) {
             trigger.setRainLastHour(rainLastHour.getValue());

@@ -15,12 +15,13 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.ValidationException;
 import me.hanane.trigger.Trigger;
 import me.hanane.trigger.service.TriggersRepository;
+import me.hanane.trigger.service.TriggersService;
 
 import static me.hanane.utilities.Utilities.createNotification;
 
 public class TriggerView {
 
-    public static Dialog createDialog(TriggersRepository triggersRepository, Trigger trigger) {
+    public static Dialog createDialog(TriggersService triggersService, Trigger trigger) {
         final Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Edit " + trigger.getName());
 
@@ -41,7 +42,7 @@ public class TriggerView {
         saveButton.addClickListener(listener -> {
             try {
                 triggerForm.getBinder().writeBean(trigger);
-                triggersRepository.save(trigger);
+                triggersService.save(trigger);
                 final Notification notification = createNotification("Modified successfully!");
                 notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 notification.setDuration(3 * 1000);
@@ -64,7 +65,7 @@ public class TriggerView {
         deleteButton.addClickListener(listener -> {
             try {
                 triggerForm.getBinder().writeBean(trigger);
-                triggersRepository.delete(trigger);
+                triggersService.delete(trigger);
                 final Notification notification = createNotification("Deleted successfully!");
                 notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 notification.setDuration(3 * 1000);
@@ -86,12 +87,12 @@ public class TriggerView {
         return dialog;
     }
 
-    public static Component build(TriggersRepository triggersRepository, Trigger trigger) {
+    public static Component build(TriggersService triggersService, Trigger trigger) {
         final VerticalLayout card = new VerticalLayout();
         card.addClassName("card");
         card.getThemeList().add("spacing-s");
 
-        card.addClickListener(listener -> createDialog(triggersRepository, trigger).open());
+        card.addClickListener(listener -> createDialog(triggersService, trigger).open());
 
         final HorizontalLayout header = new HorizontalLayout();
         header.addClassName("header");
@@ -101,7 +102,7 @@ public class TriggerView {
         final Span name = new Span(trigger.getName().toUpperCase());
         name.addClassName("name");
 
-        final Span description = new Span(trigger.getDescription().toLowerCase());
+        final Span description = new Span(trigger.getDescription() == null ? "" : trigger.getDescription().toLowerCase());
         name.addClassName("description");
 
         final Span date = new Span(trigger.getDate());

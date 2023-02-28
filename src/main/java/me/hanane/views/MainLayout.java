@@ -3,6 +3,8 @@ package me.hanane.views;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
@@ -17,6 +19,8 @@ import me.hanane.data.entity.User;
 import me.hanane.security.AuthenticatedUser;
 import me.hanane.views.about.AboutView;
 import me.hanane.views.dashboard.DashboardView;
+import me.hanane.views.login.LoginView;
+import me.hanane.views.register.RegisterView;
 import me.hanane.views.triggers.TriggersView;
 
 import java.util.Optional;
@@ -27,6 +31,7 @@ import java.util.Optional;
 public class MainLayout extends AppLayout {
 
     private H2 viewTitle;
+
     private final AuthenticatedUser authenticatedUser;
     private final AccessAnnotationChecker accessChecker;
 
@@ -83,7 +88,7 @@ public class MainLayout extends AppLayout {
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
 
-            Avatar avatar = new Avatar(user.getName());
+            Avatar avatar = new Avatar(user.getFirstName() + " " + user.getLastName());
             avatar.setThemeName("xsmall");
             avatar.getElement().setAttribute("tabindex", "-1");
 
@@ -93,7 +98,7 @@ public class MainLayout extends AppLayout {
             MenuItem userName = userMenu.addItem("");
             Div div = new Div();
             div.add(avatar);
-            div.add(user.getName());
+            div.add(user.getFirstName());
             div.add(new Icon("lumo", "dropdown"));
             div.getElement().getStyle().set("display", "flex");
             div.getElement().getStyle().set("align-items", "center");
